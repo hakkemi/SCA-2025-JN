@@ -18,9 +18,16 @@ class Drink:
         self.price = price
         self.size = size
         self.toppings = toppings
-class Order:
-    current = []
-print("hi")
+class Current_Drink (Drink):
+    pass
+class Current_Order:
+
+    current_total = []
+    drink_count = 0
+    def __init__(self, drink):
+        self.drink = drink
+        current_total.append(drink)
+        drink_count += 1
 
 def display_dashboard():
     print("--- Dashboard ---")
@@ -34,15 +41,22 @@ def display_dashboard():
     validate_option_menu(choice)
 
 def add_new_order():
+    print(f"CURRENT ORDER LIST: {order} CURRENT DRINK COUNTER: {drinks_counter}")
     display_add_menu()
     drink_choice = int(input("Choice: "))
     if 0 <= drink_choice <= len(menu):
+        current_order = Current_Order()
         for index, drink in enumerate(menu):
+
             if drink_choice == drink.drink_id:
+
                 size_choice = input("Size (M/L): ")
                 if size_choice.lower() == "L".lower():
-                    drink.size = "Large"
-                    drink.price += 1
+                    current_size = "Large"
+                    current_price = (drink.price+1)
+                    print(current_price)
+                elif size_choice.lower() == drink.size.lower():
+                    current_size = drink.size.lower()
                 print("--- Toppings ---")
                 print("1. Boba")
                 print("2. Fruit Jelly")
@@ -50,11 +64,18 @@ def add_new_order():
                 print("4. None")
                 toppings_choice = int(input("Choice: "))
                 if toppings_choice == 1:
-                    drink.price += 0.5
+                    current_topping = "Boba"
+                    current_price += 0.5
                 elif toppings_choice == 2:
-                    drink.price += 0.75
+                    current_topping = "Fruit Jelly"
+                    current_price+= 0.75
                 elif toppings_choice == 3:
-                    drink.price += 0.85
+                    current_topping = "Cheesefoam"
+                    current_price += 0.85
+                else:
+                    current_topping = None
+                drinks_counter += 1
+                current_drink = Current_Drink(drinks_counter, drink.name, drink.type, current_price, current_size, current_topping)
                 print("1. Return to dashboard (completes current order)")
                 print("2. Add another drink")
                 re_choice = int(input("Choice: "))
