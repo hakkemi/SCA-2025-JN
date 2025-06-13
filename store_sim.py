@@ -20,15 +20,11 @@ class Drink:
         self.toppings = toppings
 class Current_Drink (Drink):
     pass
-class Current_Order:
-
-    current_total = []
-    drink_count = 0
-    def __init__(self, drink):
-        self.drink = drink
-        current_total.append(drink)
-        drink_count += 1
-
+class Order():
+    total_order_count = 0
+    def __init__(self, list):
+        self.list = list
+        Order.total_order_count += 1
 def display_dashboard():
     print("--- Dashboard ---")
     print("1. Add Order")
@@ -39,21 +35,16 @@ def display_dashboard():
     print(f"Alerts: {alerts}")
     choice = int(input("Choice: "))
     validate_option_menu(choice)
-
-def add_new_order():
-    print(f"CURRENT ORDER LIST: {order} CURRENT DRINK COUNTER: {drinks_counter}")
+def add_drink_to_order(list):
     display_add_menu()
     drink_choice = int(input("Choice: "))
     if 0 <= drink_choice <= len(menu):
-        current_order = Current_Order()
         for index, drink in enumerate(menu):
-
             if drink_choice == drink.drink_id:
-
                 size_choice = input("Size (M/L): ")
                 if size_choice.lower() == "L".lower():
                     current_size = "Large"
-                    current_price = (drink.price+1)
+                    current_price = (drink.price + 1)
                     print(current_price)
                 elif size_choice.lower() == drink.size.lower():
                     current_size = drink.size.lower()
@@ -68,21 +59,30 @@ def add_new_order():
                     current_price += 0.5
                 elif toppings_choice == 2:
                     current_topping = "Fruit Jelly"
-                    current_price+= 0.75
+                    current_price += 0.75
                 elif toppings_choice == 3:
                     current_topping = "Cheesefoam"
                     current_price += 0.85
                 else:
                     current_topping = None
-                drinks_counter += 1
-                current_drink = Current_Drink(drinks_counter, drink.name, drink.type, current_price, current_size, current_topping)
-                print("1. Return to dashboard (completes current order)")
+                current_drink = Current_Drink(drink.name, drink.type, current_price, current_size, current_topping)
+                print("1. Complete order")
                 print("2. Add another drink")
                 re_choice = int(input("Choice: "))
                 if re_choice == 1:
-                    display_dashboard()
+
+                    break
                 elif re_choice == 2:
-                    add_new_order()
+                    list.append(current_drink)
+    return list
+
+
+
+def add_new_order():
+    the_order = []
+    order = Order(the_order)
+    add_drink_to_order(order.list)
+    print(current_order_count)
 
 def display_add_menu ():
     print("--- Menu ---")
@@ -103,6 +103,7 @@ def validate_option_menu (choice):
     if 1 <= choice <= 5:
         if choice == 1:
             add_new_order()
+            display_dashboard()
         elif choice == 2:
             view_orders()
         elif choice == 3:
@@ -116,6 +117,7 @@ def validate_option_menu (choice):
         display_dashboard()
 
 def main ():
+    total_orders = []
     display_dashboard()
 
 
@@ -132,5 +134,5 @@ menu = [Drink(drink_id = i + 1, **item_data) for i, item_data in enumerate(menu_
 # for i, item_data in enumerate(menu_data):
 #     drink = Drink(drink_id = i + 1, **item_data)
 #     menu.append(drink)
-
+every_order = []
 main()
