@@ -1,11 +1,11 @@
-alerts = []
+alerts = [] # for inventory
 # i am nawt handling any exceptions or errors rn
 class Drink:
 
     def __init__(self, drink_id, name, type, price, size="Medium", toppings=None):
         if size.lower() == "Large".lower():
             price += 1
-        if not toppings == None:
+        if toppings is not None:
             if toppings == "Boba".lower():
                 price += 0.5
             elif toppings == "Fruit Jelly".lower():
@@ -22,8 +22,8 @@ class Current_Drink (Drink):
     pass
 class Order():
     total_order_count = 0
-    def __init__(self, list):
-        self.list = list
+    def __init__(self, drink_list):
+        self.drink_list = drink_list
         Order.total_order_count += 1
 def display_dashboard():
     print("--- Dashboard ---")
@@ -33,11 +33,21 @@ def display_dashboard():
     print("4. Adjust Inventory")
     print("5. Quit program")
     print(f"Alerts: {alerts}")
-    choice = int(input("Choice: "))
-    validate_option_menu(choice)
-def add_drink_to_order(list):
+    try:
+        choice = int(input("Choice: "))
+        validate_option_menu(choice)
+    except ValueError:
+        print("Invalid input. Please enter an integer number between 1 and 5.")
+        display_dashboard()  # Call dashboard again if input is invalid
+
+def add_drink_to_order(drink_list):
     display_add_menu()
-    drink_choice = int(input("Choice: "))
+    try:
+        drink_choice = int(input("Choice: "))
+    except ValueError:
+        print("Invalid input. Enter an int #")
+        return add_drink_to_order(drink_list)
+
     if 0 <= drink_choice <= len(menu):
         for index, drink in enumerate(menu):
             if drink_choice == drink.drink_id:
@@ -70,19 +80,23 @@ def add_drink_to_order(list):
                 print("2. Add another drink")
                 re_choice = int(input("Choice: "))
                 if re_choice == 1:
-                    list.append(current_drink)
-                    for i, cdrink in enumerate(list):
+                    drink_list.append(current_drink)
+                    for i, cdrink in enumerate(drink_list):
                         print(f"{cdrink.drink_id}")
                         # this is supposed to access cdrink.name, but it instead grabs the variable 1 param after
                     break
                 elif re_choice == 2:
-                    list.append(current_drink)
-                    add_drink_to_order(list)
-    return list
+                    drink_list.append(current_drink)
+                    add_drink_to_order(drink_list)
+        return drink_list
+    else:
+        print("Invalid option, please try again")
+        return add_drink_to_order(drink_list)
+
 def add_new_order():
     order = []
-    new_order_list = add_drink_to_order(order)
-    new_order = Order(new_order_list)
+    new_order_drink_list = add_drink_to_order(order)
+    new_order = Order(new_order_drink_list)
     print(new_order.total_order_count)
     every_order.append(new_order)
     return new_order
@@ -92,18 +106,17 @@ def display_add_menu ():
     print("0. View Total Drinks in Order")
     for i, drink in enumerate(menu):
         print(f"{i + 1}. {drink.name} {drink.drink_id}")
+
 def view_orders():
     for i, order in enumerate(every_order):
         print(f"--- Order {i+1} ---")
-        for j, drink in enumerate(order.list):
+        for j, drink in enumerate(order.drink_list):
             print(f"{drink.drink_id}")
 
 #def view_inventory () :
 
 
 #def adjust_inventory () :
-
-
 def validate_option_menu (choice):
     if 1 <= choice <= 5:
         if choice == 1:
@@ -118,14 +131,13 @@ def validate_option_menu (choice):
         elif choice == 5:
             print("Program terminated")
     else:
-        print("Invalid option!")
+        print("Invalid option! Please choose a number between 1 and 5.")
         display_dashboard()
 
 def main ():
-    total_orders = []
     display_dashboard()
 
-
+# i dont actually know how dictionaries work yet
 menu_data = [
     {"name": "Signature Milk Tea", "type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": None},
     {"name": "Thai Milk Tea", "type": "Tea Based","price": 5.00, "size": "Medium", "toppings": None},
