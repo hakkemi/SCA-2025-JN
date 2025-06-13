@@ -20,7 +20,7 @@ class Drink:
         self.toppings = toppings
 class Order:
     current = []
-
+print("hi")
 
 def display_dashboard():
     print("--- Dashboard ---")
