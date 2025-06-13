@@ -47,7 +47,9 @@ def add_drink_to_order(drink_list):
     except ValueError:
         print("Invalid input. Enter an int #")
         return add_drink_to_order(drink_list)
-
+# oh shit i forgot baout 0
+# maybe we just do if not 0<= blah blah to catch anythign first
+# then case 0 then whatever else to add new rink
     if 0 <= drink_choice <= len(menu):
         for index, drink in enumerate(menu):
             if drink_choice == drink.drink_id:
@@ -111,7 +113,7 @@ def view_orders():
     for i, order in enumerate(every_order):
         print(f"--- Order {i+1} ---")
         for j, drink in enumerate(order.drink_list):
-            print(f"{drink.drink_id}")
+            print(f"{drink.drink_id}, ${drink.type}, {drink.price}, {drink.size}")
 
 #def view_inventory () :
 
