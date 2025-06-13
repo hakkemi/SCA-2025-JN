@@ -70,28 +70,33 @@ def add_drink_to_order(list):
                 print("2. Add another drink")
                 re_choice = int(input("Choice: "))
                 if re_choice == 1:
-
+                    list.append(current_drink)
+                    for i, cdrink in enumerate(list):
+                        print(f"{cdrink.drink_id}")
+                        # this is supposed to access cdrink.name, but it instead grabs the variable 1 param after
                     break
                 elif re_choice == 2:
                     list.append(current_drink)
+                    add_drink_to_order(list)
     return list
-
-
-
 def add_new_order():
-    the_order = []
-    order = Order(the_order)
-    add_drink_to_order(order.list)
-    print(current_order_count)
+    order = []
+    new_order_list = add_drink_to_order(order)
+    new_order = Order(new_order_list)
+    print(new_order.total_order_count)
+    every_order.append(new_order)
+    return new_order
 
 def display_add_menu ():
     print("--- Menu ---")
     print("0. View Total Drinks in Order")
     for i, drink in enumerate(menu):
         print(f"{i + 1}. {drink.name} {drink.drink_id}")
-
-# def view_orders():
-
+def view_orders():
+    for i, order in enumerate(every_order):
+        print(f"--- Order {i+1} ---")
+        for j, drink in enumerate(order.list):
+            print(f"{drink.drink_id}")
 
 #def view_inventory () :
 
