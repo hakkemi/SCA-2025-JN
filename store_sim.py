@@ -1,17 +1,29 @@
 alerts = [] # for inventory
+toppings_data = {
+    "Boba": 0.5,
+    "Fruit Jelly": 0.75,
+    "Cheese Foam": 0.85,
+}
+menu_data = [
+    {"name": "Signature Milk Tea", "type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": None},
+    {"name": "Thai Milk Tea", "type": "Tea Based","price": 5.00, "size": "Medium", "toppings": None},
+    {"name": "Oolong Milk Tea", "type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": None},
+    {"name": "Oreo Milk Tornado", "type": "Milk Based","price": 7.00, "size": "Medium", "toppings": None},
+    {"name": "Strawberry Milk Tornado", "type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": None},
+    {"name": "Taronado", "type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": None},
+]
 # i am nawt handling any exceptions or errors rn
 class Drink:
 
     def __init__(self, drink_id, name, type, price, size="Medium", toppings=None):
         if size.lower() == "Large".lower():
             price += 1
-        if toppings is not None:
-            if toppings == "Boba".lower():
-                price += 0.5
-            elif toppings == "Fruit Jelly".lower():
-                price += 0.75
-            elif toppings == "Cheesefoam".lower():
-                price += 0.85
+        if toppings == "Boba".lower():
+            price += 0.5
+        elif toppings == "Fruit Jelly".lower():
+            price += 0.75
+        elif toppings == "Cheesefoam".lower():
+            price += 0.85
         self.drink_id = drink_id
         self.name = name
         self.type = type
@@ -50,6 +62,7 @@ def add_drink_to_order(drink_list):
 # oh shit i forgot baout 0
 # maybe we just do if not 0<= blah blah to catch anythign first
 # then case 0 then whatever else to add new rink
+
     if 0 <= drink_choice <= len(menu):
         for index, drink in enumerate(menu):
             if drink_choice == drink.drink_id:
@@ -66,6 +79,7 @@ def add_drink_to_order(drink_list):
                 print("3. Cheesefoam")
                 print("4. None")
                 toppings_choice = int(input("Choice: "))
+                toppings = ["Boba", "Fruit Jelly"]
                 if toppings_choice == 1:
                     current_topping = "Boba"
                     current_price += 0.5
@@ -116,22 +130,19 @@ def view_orders():
             print(f"{drink.drink_id}, ${drink.type}, {drink.price}, {drink.size}")
 
 #def view_inventory () :
-
-
 #def adjust_inventory () :
 def validate_option_menu (choice):
-    if 1 <= choice <= 5:
-        if choice == 1:
-            add_new_order()
-            display_dashboard()
-        elif choice == 2:
-            view_orders()
-        elif choice == 3:
-            view_inventory()
-        elif choice == 4:
-            adjust_inventory()
-        elif choice == 5:
-            print("Program terminated")
+    if choice == 1:
+        add_new_order()
+        display_dashboard()
+    elif choice == 2:
+        view_orders()
+    elif choice == 3:
+        view_inventory()
+    elif choice == 4:
+        adjust_inventory()
+    elif choice == 5:
+        print("Program terminated")
     else:
         print("Invalid option! Please choose a number between 1 and 5.")
         display_dashboard()
@@ -139,15 +150,6 @@ def validate_option_menu (choice):
 def main ():
     display_dashboard()
 
-# i dont actually know how dictionaries work yet
-menu_data = [
-    {"name": "Signature Milk Tea", "type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": None},
-    {"name": "Thai Milk Tea", "type": "Tea Based","price": 5.00, "size": "Medium", "toppings": None},
-    {"name": "Oolong Milk Tea", "type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": None},
-    {"name": "Oreo Milk Tornado", "type": "Milk Based","price": 7.00, "size": "Medium", "toppings": None},
-    {"name": "Strawberry Milk Tornado", "type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": None},
-    {"name": "Taronado", "type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": None},
-]
 menu = [Drink(drink_id = i + 1, **item_data) for i, item_data in enumerate(menu_data)]
 # literally the same thing menu = []
 # for i, item_data in enumerate(menu_data):
