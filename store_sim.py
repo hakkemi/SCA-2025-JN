@@ -65,14 +65,17 @@ def add_drink_to_order(drink_list):
 
     if 0 <= drink_choice <= len(menu):
         for index, drink in enumerate(menu):
+            if drink_choice == 0:
+                view_orders()
             if drink_choice == drink.drink_id:
                 size_choice = input("Size (M/L): ")
                 if size_choice.lower() == "L".lower():
                     current_size = "Large"
                     current_price = (drink.price + 1)
                     print(current_price)
-                elif size_choice.lower() == drink.size.lower():
-                    current_size = drink.size.lower()
+                elif size_choice.lower() == "M".lower():
+                    current_size = "Medium"
+                    current_price = drink.price
                 print("--- Toppings ---")
                 print("1. Boba")
                 print("2. Fruit Jelly")
@@ -121,13 +124,16 @@ def display_add_menu ():
     print("--- Menu ---")
     print("0. View Total Drinks in Order")
     for i, drink in enumerate(menu):
-        print(f"{i + 1}. {drink.name} {drink.drink_id}")
+        print(f"{i + 1}. {drink.name} (${drink.price:.2f})")
 
 def view_orders():
+    if not every_order:
+        print("You have no completed orders!")
+        display_dashboard()
     for i, order in enumerate(every_order):
         print(f"--- Order {i+1} ---")
         for j, drink in enumerate(order.drink_list):
-            print(f"{drink.drink_id}, ${drink.type}, {drink.price}, {drink.size}")
+            print(f"{drink.drink_id}, {drink.size}, {drink.price}, ${drink.type}")
 
 #def view_inventory () :
 #def adjust_inventory () :
