@@ -53,61 +53,53 @@ def display_dashboard():
         display_dashboard()  # Call dashboard again if input is invalid
 
 def add_drink_to_order(drink_list):
-    display_add_menu()
+    print("--- Menu ---")
+    print("0. View Total Drinks in Order")
+    for i, drink in enumerate(menu):
+        print(f"{i + 1}. {drink.name} (${drink.price:.2f})")
     try:
         drink_choice = int(input("Choice: "))
     except ValueError:
         print("Invalid input. Enter an int #")
         return add_drink_to_order(drink_list)
-# oh shit i forgot baout 0
-# maybe we just do if not 0<= blah blah to catch anythign first
-# then case 0 then whatever else to add new rink
 
     if 0 <= drink_choice <= len(menu):
         for index, drink in enumerate(menu):
             if drink_choice == 0:
                 view_orders()
             if drink_choice == drink.drink_id:
+                print("--- Size ---")
                 size_choice = input("Size (M/L): ")
                 if size_choice.lower() == "L".lower():
                     current_size = "Large"
                     current_price = (drink.price + 1)
-                    print(current_price)
                 elif size_choice.lower() == "M".lower():
                     current_size = "Medium"
                     current_price = drink.price
-                print("--- Toppings ---")
-                print("1. Boba")
-                print("2. Fruit Jelly")
-                print("3. Cheesefoam")
-                print("4. None")
-                toppings_choice = int(input("Choice: "))
-                toppings = ["Boba", "Fruit Jelly"]
-                if toppings_choice == 1:
-                    current_topping = "Boba"
-                    current_price += 0.5
-                elif toppings_choice == 2:
-                    current_topping = "Fruit Jelly"
-                    current_price += 0.75
-                elif toppings_choice == 3:
-                    current_topping = "Cheesefoam"
-                    current_price += 0.85
                 else:
-                    current_topping = None
+                    return add_drink_to_order(drink_list)
+                print("--- Toppings ---")
+                for i, topping in enumerate(toppings_data):
+                    print(f"{i + 1}. {topping}")
+                toppings_choice = int(input("Choice: "))
+                for i, topping in enumerate(toppings_data):
+                    if toppings_choice == (i + 1):
+                        current_topping = topping
+                        current_price += toppings_data[topping]
+                    elif (toppings_choice > len(toppings_data)) or toppings_choice == 0:
+                        print("Invalid option")
+                        return add_drink_to_order(drink_list)
                 current_drink = Current_Drink(drink.name, drink.type, current_price, current_size, current_topping)
+                print("--- Final ---")
                 print("1. Complete order")
                 print("2. Add another drink")
                 re_choice = int(input("Choice: "))
                 if re_choice == 1:
                     drink_list.append(current_drink)
-                    for i, cdrink in enumerate(drink_list):
-                        print(f"{cdrink.drink_id}")
-                        # this is supposed to access cdrink.name, but it instead grabs the variable 1 param after
-                    break
+                    return drink_list
                 elif re_choice == 2:
                     drink_list.append(current_drink)
                     add_drink_to_order(drink_list)
-        return drink_list
     else:
         print("Invalid option, please try again")
         return add_drink_to_order(drink_list)
@@ -119,12 +111,6 @@ def add_new_order():
     print(new_order.total_order_count)
     every_order.append(new_order)
     return new_order
-
-def display_add_menu ():
-    print("--- Menu ---")
-    print("0. View Total Drinks in Order")
-    for i, drink in enumerate(menu):
-        print(f"{i + 1}. {drink.name} (${drink.price:.2f})")
 
 def view_orders():
     if not every_order:
