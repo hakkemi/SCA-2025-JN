@@ -96,7 +96,7 @@ def display_dashboard():
 
 def add_drink_to_order(drink_list):
     print("\n--- Menu ---")
-    print("0. View Total Drinks in Order")
+    print("0. Cancel Order")
     for i, drink in enumerate(menu):
         print(f"{i + 1}. {drink.name} (${drink.price:.2f})")
 
@@ -140,9 +140,12 @@ def add_drink_to_order(drink_list):
                 current_price += toppings_data[topping]
 
         current_drink = Current_Drink(
-            drink.name, drink.type,
-            current_price, current_size,
-            current_topping)
+            drink_id = drink.drink_id,
+            name=drink.name,
+            type = drink.type,
+            price = current_price,
+            size = current_size,
+            toppings = current_topping)
         drink_list.append(current_drink)
         print("--- Final ---")
         print("1. Complete order")
@@ -163,10 +166,13 @@ def add_drink_to_order(drink_list):
 def add_new_order():
     order = []
     new_order_drink_list = add_drink_to_order(order)
-    new_order = Order(new_order_drink_list)
-    print(f"Order Number: {new_order.total_order_count}")
-    every_order.append(new_order)
-    return new_order
+    if not new_order_drink_list:
+        return None
+    else:
+        new_order = Order(new_order_drink_list)
+        print(f"Order Number: {new_order.total_order_count}")
+        every_order.append(new_order)
+        return new_order
 
 def view_orders():
     if not every_order:
@@ -175,31 +181,44 @@ def view_orders():
     for i, order in enumerate(every_order):
         print(f"--- Order {i+1} ---")
         for drink in order.drink_list:
-            print(f"{drink.drink_id}, {drink.size}, {drink.price}, ${drink.type:.2f}")
+            print(f"{drink.name}, {drink.toppings}, {drink.size}, ${drink.price:.2f}")
 
 def view_inventory () :
+    print(f"\n-- Inventory Overview ---")
     for ingredient, details in inventory.items():
         print(f"{ingredient}: {details["stock"]} {details["unit"]}")
 
-# takes from individual order
+# takes from individual order, will be implemented later
 def subtract_inventory (drink_list):
     for drink in drink_list:
-        drink_obj = drink
-        print(drink_obj.drink_id)
-        if drink_obj.name in recipes:
-            name = drink.name
-            print(name)
+        if drink.name in recipes:
+            drink_name = drink.name
+            for key in recipes[drink_name]:
+                if key in inventory:
+                    # print(f"og stock: {inventory[key]["stock"]}")
+                    # print(f"new stock: {inventory[key]["stock"]}")
+                    if (inventory[key]["stock"]) <= inventory[key]["threshold"]:
+                        print(f"Low on {inventory[key]}")
+                        alerts.append(f"Low stock: {key} stock is {inventory[key]['stock']}.")
+                    else:
+                        inventory[key]["stock"] -= recipes[drink_name][key]
+
         else:
-            print("boi")
+            print("Recipe needs to be added")
 def adjust_inventory () :
-    pass
+    ingredient = input("Ingredient: ").lower()
+    ingredient = ingredient.capitalize()
+    for key in inventory.keys():
+        if ingredient in key:
+            print(f"\n{ingredient} current stock: {inventory[key]["stock"]}")
+            adjustment = int(input("Add quantity: "))
+            inventory[key]["stock"] += adjustment
+
 def validate_option_menu (choice):
     if choice == 1:
         add_new_order()
-        display_dashboard()
     elif choice == 2:
         view_orders()
-        display_dashboard()
     elif choice == 3:
         view_inventory()
     elif choice == 4:
@@ -209,6 +228,7 @@ def validate_option_menu (choice):
     else:
         print("Invalid option! Please choose a number between 1 and 5.")
         display_dashboard()
+    display_dashboard()
 
 def main ():
     display_dashboard()
