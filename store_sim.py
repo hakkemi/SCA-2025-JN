@@ -1,8 +1,57 @@
 alerts = [] # for inventory
+inventory = {
+    "Milk": {"stock": 1000, "unit": "ml", "threshold": 200},
+    "Black Tea": {"stock": 500, "unit": "g", "threshold": 100},
+    "Sugar": {"stock": 700, "unit": "g", "threshold": 150},
+    "Boba": {"stock": 300, "unit": "servings", "threshold": 50},
+    "Fruit Jelly": {"stock": 250, "unit": "servings", "threshold": 40},
+    "Cheese Foam": {"stock": 200, "unit": "servings", "threshold": 30},
+    "Oolong Tea": {"stock": 400, "unit": "g", "threshold": 80},
+    "Strawberry Syrup": {"stock": 300, "unit": "ml", "threshold": 60},
+    "Taro Powder": {"stock": 200, "unit": "g", "threshold": 40},
+    "Oreo Crumbs": {"stock": 150, "unit": "g", "threshold": 30},
+    "Thai Tea Mix": {"stock": 350, "unit": "g", "threshold": 70},
+}
+# will add serving quant for toppings laterrrrrrrrrrrrrrrrrr
+recipes = {
+    # ml, g, g
+    "Signature Milk Tea": {
+        "Milk": 150,
+        "Black Tea": 20,
+        "Sugar": 30,
+    },
+    "Thai Milk Tea": {
+        "Milk": 150,
+        "Thai Tea Mix": 25,
+        "Sugar": 30,
+    },
+    "Oolong Milk Tea": {
+        "Milk": 150,
+        "Oolong Tea": 20,
+        "Sugar": 30,
+    },
+    "Oreo Milk Tornado": {
+        "Milk": 200,
+        "Oreo Crumbs": 40,
+        "Sugar": 40,
+    },
+    "Strawberry Milk Tornado": {
+        "Milk": 200,
+        "Strawberry Syrup": 50,
+        "Sugar": 40,
+    },
+    "Taronado": {
+        "Milk": 200,
+        "Taro Powder": 30,
+        "Sugar": 40,
+    },
+}
 toppings_data = {
-    "Boba": 0.5,
+    "None": 0.00,
+    "Boba": 0.50,
     "Fruit Jelly": 0.75,
     "Cheese Foam": 0.85,
+    "Oreo Crumbs": 0.85,
 }
 menu_data = [
     {"name": "Signature Milk Tea", "type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": None},
@@ -31,7 +80,7 @@ class Order():
         self.drink_list = drink_list
         Order.total_order_count += 1
 def display_dashboard():
-    print("--- Dashboard ---")
+    print("\n--- Dashboard ---")
     print("1. Add Order")
     print("2. View Orders")
     print("3. View Inventory")
@@ -46,7 +95,7 @@ def display_dashboard():
         display_dashboard()  # Call dashboard again if input is invalid
 
 def add_drink_to_order(drink_list):
-    print("--- Menu ---")
+    print("\n--- Menu ---")
     print("0. View Total Drinks in Order")
     for i, drink in enumerate(menu):
         print(f"{i + 1}. {drink.name} (${drink.price:.2f})")
@@ -57,7 +106,6 @@ def add_drink_to_order(drink_list):
         print("Invalid input. Enter an int #")
         return add_drink_to_order(drink_list)
     if drink_choice == 0:
-        view_orders()
         return drink_list
 
     if 1 <= drink_choice <= len(menu):
@@ -77,14 +125,19 @@ def add_drink_to_order(drink_list):
         for i, topping in enumerate(toppings_data):
             print(f"{i + 1}. {topping}")
 
-        toppings_choice = int(input("Choice: "))
+        try:
+            toppings_choice = int(input("Choice: "))
+        except ValueError:
+            print("Invalid option, please enter an integer")
+            return add_drink_to_order(drink_list)
+        if toppings_choice == 0:
+            print("Invalid option")
+            return add_drink_to_order(drink_list)
+
         for i, topping in enumerate(toppings_data):
             if toppings_choice == (i + 1):
                 current_topping = topping
                 current_price += toppings_data[topping]
-            elif (toppings_choice > len(toppings_data)) or toppings_choice == 0:
-                print("Invalid option")
-                return add_drink_to_order(drink_list)
 
         current_drink = Current_Drink(
             drink.name, drink.type,
@@ -98,6 +151,9 @@ def add_drink_to_order(drink_list):
         if re_choice == 1:
             return drink_list
         elif re_choice == 2:
+            return add_drink_to_order(drink_list)
+        else:
+            print("Invalid option, please enter an integer of 1 or 2")
             return add_drink_to_order(drink_list)
     else:
         print("Invalid option, please try again")
@@ -118,10 +174,16 @@ def view_orders():
     for i, order in enumerate(every_order):
         print(f"--- Order {i+1} ---")
         for drink in order.drink_list:
-            print(f"{drink.drink_id}, {drink.size}, {drink.price}, ${drink.type}")
+            print(f"{drink.drink_id}, {drink.size}, {drink.price}, ${drink.type:.2f}")
 
 def view_inventory () :
-    pass
+    for ingredient, details in inventory.items():
+        print(f"{ingredient}: {details["stock"]} {details["unit"]}")
+
+# takes from individual order
+def subtract_inventory (drink_list):
+    for drink in drink_list:
+        for
 def adjust_inventory () :
     pass
 def validate_option_menu (choice):
@@ -130,6 +192,7 @@ def validate_option_menu (choice):
         display_dashboard()
     elif choice == 2:
         view_orders()
+        display_dashboard()
     elif choice == 3:
         view_inventory()
     elif choice == 4:
@@ -149,4 +212,5 @@ menu = [Drink(drink_id = i + 1, **item_data) for i, item_data in enumerate(menu_
 #     drink = Drink(drink_id = i + 1, **item_data)
 #     menu.append(drink)
 every_order = []
+
 main()
