@@ -149,6 +149,7 @@ def add_drink_to_order(drink_list):
         print("2. Add another drink")
         re_choice = int(input("Choice: "))
         if re_choice == 1:
+            subtract_inventory(drink_list)
             return drink_list
         elif re_choice == 2:
             return add_drink_to_order(drink_list)
@@ -183,7 +184,13 @@ def view_inventory () :
 # takes from individual order
 def subtract_inventory (drink_list):
     for drink in drink_list:
-        for
+        drink_obj = drink
+        print(drink_obj.drink_id)
+        if drink_obj.name in recipes:
+            name = drink.name
+            print(name)
+        else:
+            print("boi")
 def adjust_inventory () :
     pass
 def validate_option_menu (choice):
