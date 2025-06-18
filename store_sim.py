@@ -1,5 +1,5 @@
 alerts = [] # for inventory
-
+cd = None # current drink global var
 '''
 # L: Overall, it might be helpful to add drink_type-hints to your code to make it easier to understand the types of particular objects
 # 
@@ -73,9 +73,9 @@ inventory = {
 recipes = {
     # ml, g, g
     "Signature Milk Tea": {
-        "Milk": 900,
+        "Milk": 150,
         "Black Tea": 20,
-        "Sugar": 600,
+        "Sugar": 30,
     },
     "Thai Milk Tea": {
         "Milk": 150,
@@ -118,7 +118,7 @@ menu_data = [
     {"name": "Strawberry Milk Tornado", "drink_type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": None},
     {"name": "Taronado", "drink_type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": None},
 ]
-cd = None
+
 class Drink:
 
     # creates drink object with attributes
@@ -234,6 +234,7 @@ def add_drink_to_order(drink_list):
             toppings = current_topping # L: this is highlighted orange by IDE because if you don't have toppings data it's undefined
         ) # L: moved this parenthesis down to the next line
 
+        # checks to see if there is enough ingredients associated with the drink to make it or not
         if cd.name in recipes:
             for key in recipes[cd.name]:
                 if key in inventory:
