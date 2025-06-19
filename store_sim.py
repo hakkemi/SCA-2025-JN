@@ -73,34 +73,71 @@ inventory = {
 recipes = {
     # ml, g, g
     "Signature Milk Tea": {
-        "Milk": 150,
-        "Black Tea": 20,
-        "Sugar": 30,
+        "Medium": {
+            "Milk": 150,
+            "Black Tea": 20,
+            "Sugar": 30,
+        },
+        "Large": {
+            "Milk": 200,
+            "Black Tea": 25,
+            "Sugar": 40,
+        },
     },
     "Thai Milk Tea": {
-        "Milk": 150,
-        "Thai Tea Mix": 25,
-        "Sugar": 30,
+        "Medium": {
+            "Milk": 150,
+            "Thai Tea Mix": 25,
+            "Sugar": 30,
+        },
+        "Large": {
+            "Milk": 200,
+            "Thai Tea Mix": 30,
+            "Sugar": 40,
+        },
     },
     "Oolong Milk Tea": {
-        "Milk": 150,
-        "Oolong Tea": 20,
-        "Sugar": 30,
+        "Medium": {
+            "Milk": 150,
+            "Oolong Tea": 20,
+            "Sugar": 30,
+        },
+        "Large": {
+            "Milk": 200,
+            "Oolong Tea": 25,
+            "Sugar": 40,
+        },
     },
     "Oreo Milk Tornado": {
-        "Milk": 200,
-        "Oreo Crumbs": 40,
-        "Sugar": 40,
+        "Medium": {
+            "Milk": 200,
+            "Oreo Crumbs": 40,
+            "Sugar": 40,
+        },
+        "Large": {
+            "Milk": 250,
+            "Oreo Crumbs": 50,
+            "Sugar": 50,
+        },
     },
     "Strawberry Milk Tornado": {
-        "Milk": 200,
-        "Strawberry Syrup": 50,
-        "Sugar": 40,
+        "Medium": {
+            "Milk": 200,
+            "Strawberry Syrup": 50,
+            "Sugar": 40,
+        },
+        "Large": {
+            "Milk": 250,
+            "Strawberry Syrup": 60,
+            "Sugar": 50,
+        },
     },
     "Taronado": {
-        "Milk": 200,
-        "Taro Powder": 30,
-        "Sugar": 40,
+        "Medium": {
+            "Milk": 200,
+            "Taro Powder": 30,
+            "Sugar": 40,
+        },
     },
 }
 toppings_data = {
@@ -223,6 +260,7 @@ def add_drink_to_order(drink_list):
             if toppings_choice == i + 1:
                 current_topping = topping
                 current_price += toppings_data[topping]
+                break
 
         # creates the drink object
         cd = Drink(
@@ -235,23 +273,27 @@ def add_drink_to_order(drink_list):
         ) # L: moved this parenthesis down to the next line
 
         # checks to see if there is enough ingredients associated with the drink to make it or not
-        if cd.name in recipes:
-            for key in recipes[cd.name]:
+        if cd.name in recipes and cd.size in recipes[cd.name]:
+            print("1st CHECKED")
+            for key in recipes[cd.name][cd.size]:
                 if key in inventory:
-                    if (inventory[key]["stock"] - recipes[cd.name][key]) <= 0:
+                    print ("2nd CHECKED")
+                    if (inventory[key]["stock"] - recipes[cd.name][cd.size][key]) <= 0:
                         print(f"Not enough {key}. Please add to inventory. Completing and closing order now.")
                         return drink_list
-                    elif (inventory[key]["stock"] - recipes[cd.name][key]) <= (inventory[key]["threshold"] + 100):
+                    elif (inventory[key]["stock"] - recipes[cd.name][cd.size][key]) <= (inventory[key]["threshold"]):
                         print(
-                        f"*****\nWARNING: {key} stock will be {(inventory[key]["stock"] - recipes[cd.name][key])} {inventory[key]["unit"]}.\n*****")
-                        alert_message = f"Low: {key} ({(inventory[key]["stock"] - recipes[cd.name][key])}) {inventory[key]["unit"]}, "
+                        f"*****\nWARNING: {key} stock will be {(inventory[key]["stock"] - recipes[cd.name][cd.size][key])} {inventory[key]["unit"]}.\n*****")
+                        alert_message = f"Low: {key} ({(inventory[key]["stock"] - recipes[cd.name][cd.size][key])}) {inventory[key]["unit"]}, "
                         for sentence in alerts:
                             if key in sentence:  # removes any alerts associated with the ingredient name so alerts doesnt have duplicate ingredients
                                     alerts.remove(sentence)
                         alerts.append(alert_message)
-                    inventory[key]["stock"] -= recipes[cd.name][key]
+                    inventory[key]["stock"] -= recipes[cd.name][cd.size][key]
         else:
-            print("Recipe needs to be added")
+            print(f"Recipe for {cd.name} (Size: {cd.size}) needs to be added. "
+                  f"Order will be closed, no stock will be deducted")
+            return drink_list
         drink_list.append(cd)
         print("--- Final ---")
         print("1. Complete order")
@@ -316,12 +358,17 @@ def adjust_inventory () :
     for key in inventory.keys():
         if ingredient in key:
             print(f"{ingredient} current stock: {inventory[key]["stock"]}")
-            adjustment = int(input("Add quantity: "))
-            inventory[key]["stock"] += adjustment
-            for sentence in alerts:
-                if ingredient in sentence: # removes any alerts associated with the ingredient name if threshold isnt met
-                    if inventory[key]["stock"] > inventory[key]["threshold"]:
-                        alerts.remove(sentence)
+            try:
+                adjustment = int(input("Add quantity: "))
+                inventory[key]["stock"] += adjustment
+                for sentence in alerts:
+                    if ingredient in sentence: # removes any alerts associated with the ingredient name if threshold isnt met
+                        if inventory[key]["stock"] > inventory[key]["threshold"]:
+                            alerts.remove(sentence)
+            except ValueError:
+                print("Invalid input detected, please enter an integer.")
+                return adjust_inventory()
+    return None
 
 def main ():
     display_dashboard()
