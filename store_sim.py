@@ -68,8 +68,9 @@ inventory = {
     "Oreo Crumbs": {"stock": 150, "unit": "g", "threshold": 30},
     "Thai Tea Mix": {"stock": 350, "unit": "g", "threshold": 70},
 }
-# will add serving quant for toppings laterrrrrrrrrrrrrrrrrr
-# also maybe add diff recipes for large/small sizes !
+# WILL NOT BE INCLUDING IN RECIPES. I AM TOO LAZY. WE HAVE AN INFINITE SUPPLY
+# OF BOBA FRUIT JELLY AND CF.
+# recipes for large and medium sizes
 recipes = {
     # ml, g, g
     "Signature Milk Tea": {
@@ -137,6 +138,11 @@ recipes = {
             "Milk": 200,
             "Taro Powder": 30,
             "Sugar": 40,
+        },
+        "Large": {
+                "Milk": 250,
+                "Taro Powder": 40,
+                "Sugar": 50,
         },
     },
 }
@@ -354,7 +360,10 @@ def view_inventory () :
 # allows user to add stock to a certain ingredient
 def adjust_inventory () :
     print("\n--- Inventory Adjustment ---")
-    ingredient = input("Ingredient: ").lower().capitalize()
+    try:
+        ingredient = input("Ingredient: ").lower().capitalize()
+    except ValueError:
+        print("Please enter a valid ingredient")
     for key in inventory.keys():
         if ingredient in key:
             print(f"{ingredient} current stock: {inventory[key]["stock"]}")
