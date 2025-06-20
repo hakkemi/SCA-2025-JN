@@ -1,60 +1,21 @@
 alerts = [] # for inventory
 cd = None # current drink global var
+# List stored with every existing order
+every_order = []
+
+''' 
+** Boba Store Simulation **
+
+User is the Barista
+Drinks can be added to an order. 
+Each order has a total ($) which will be calculated based on drink  adjustments
+To the drink
+Each time a drink is added to an order, it's subsequent ingredients will be subtracted from the current stock in the inventory.
+If not enough ingredients are present in order to make the drink, the order will force complete and the current drink will be cancelled
+The barista may adjust the inventory in order to take on more drink orders.
+Alerts of ingredients falling below their threshold will be displayed on the main dashboard, and will be removed when inventory is adjusted
 '''
-# L: Overall, it might be helpful to add drink_type-hints to your code to make it easier to understand the types of particular objects
-# 
-# L: Nice inventory representation! You can also use this thing called a dataclass that might make the code a little bit easier
-# L: I use dataclasses because I'm afraid that I would mistype "threshold" or things like that and lead to extra bugs
-# L: using dataclasses makes it so that the IDE can detect typos
-# 
-# L: For now, I would keep the representation you have, since it works and uses what we've learned in class
-# L: but in case you're curious, here's how I'd write your same inventory
-* from dataclasses import dataclass
-* from enum import Enum
-
-
-# Enums are nice when you have a few potential options for strings
-# String Enums pretty much act just like strings, but avoid typos
-# List out all potential units to avoid typos
-* class UnitType(str, Enum):
-    ml = "ml"
-    g = "g"
-    servings = "servings"
-
-# List out all potential shop item names to avoid typos
-* class ShopItemName(str, Enum):
-    milk = "Milk"
-    black_tea = "Black Tea"
-    sugar = "Sugar"
-    boba = "Boba"
-    fruit_jelly = "Fruit Jelly"
-    cheese_foam = "Cheese Foam"
-    oolong_tea = "Oolong Tea"
-    strawberry_syrup = "Strawberry Syrup"
-    taro_powder = "Taro Powder"
-    oreo_crumbs = "Oreo Crumbs"
-    thai_tea_mix = "Thai Tea Mix"
-
-
-# L: a dataclass is what you use when you have a class without any methods
-* @dataclass
-class ShopItem:
-    name: ShopItemName
-    stock: int
-    unit: UnitType
-    threshold: int
-
-# L: create a dictionary of shop items that goes from the shop item name to the shop item
-# L: again, DONT USE THIS - just want you to see that it's possible
-# L: I like how you have it set up currently
-* london_inventory = {
-    ShopItemName.milk: ShopItem(ShopItemName.milk, 1000, UnitType.ml, 200),
-    ShopItemName.black_tea: ShopItem(ShopItemName.black_tea, 500, UnitType.g, 100),
-    # etc.
-}
-'''
-
-
+# Nested dictionary containing ingredient names and relevant information
 inventory = {
     "Milk": {"stock": 1000, "unit": "ml", "threshold": 200},
     "Black Tea": {"stock": 500, "unit": "g", "threshold": 100},
@@ -68,9 +29,8 @@ inventory = {
     "Oreo Crumbs": {"stock": 150, "unit": "g", "threshold": 30},
     "Thai Tea Mix": {"stock": 350, "unit": "g", "threshold": 70},
 }
-# WILL NOT BE INCLUDING IN RECIPES. I AM TOO LAZY. WE HAVE AN INFINITE SUPPLY
-# OF BOBA FRUIT JELLY AND CF.
-# recipes for large and medium sizes
+# WILL NOT BE INCLUDING (most) TOPPINGS IN RECIPES. I AM TOO LAZY. WE HAVE AN INFINITE SUPPLY OF BOBA FRUIT JELLY AND CF.
+# Nested dictionaries containing recipes for large and medium sizes
 recipes = {
     # ml, g, g
     "Signature Milk Tea": {
@@ -164,7 +124,7 @@ menu_data = [
 
 class Drink:
 
-    # creates drink object with attributes
+    # Creates drink object with attributes
     def __init__(self, drink_id, name, drink_type, price, size="Medium", toppings=None):
         self.drink_id = drink_id
         self.name = name
@@ -173,16 +133,9 @@ class Drink:
         self.size = size
         self.toppings = toppings
 
-# child class of drink
-# L: There are two alternative ways of doing this
-# L: 1. Add a property to the `Drink` class that's just a boolean `.current`
-# L: 2. Create a global variable called `current_drink` that just stores the current drink
-# L: I lean towards (2) because it ensures that you always only have one current drink
 
-# class that stores drink objects and the total price of all drink objects
-# L: cool use of the mixture between class properties and instance properties!
-# L: As your IDE suggests, you can remove the parentheses in `class Order():` since they're empty
-# done (used to java classes lolol)
+# Class that stores drink objects and the total price of all drink objects
+# Each time an order 'object' is created, the class will add +1 to the instance variable 'total_order_count'
 class Order:
     total_order_count = 0 # total order counter
     def __init__(self, drink_list, drink_list_total):
@@ -190,7 +143,7 @@ class Order:
         self.drink_list_total = drink_list_total
         Order.total_order_count += 1
 
-# dashboard/"main menu" function to display options to user
+# Dashboard/"main menu" function to display options to user
 def display_dashboard():
     print("\n--- Dashboard ---")
     print("1. Add Order")
@@ -201,6 +154,7 @@ def display_dashboard():
     print(f"Alerts: {alerts}")
     try: # checks to see if input is valid
         choice = int(input("Choice: "))
+        print("-----------------")
         if choice == 1:
             add_new_order()
         elif choice == 2:
@@ -211,6 +165,7 @@ def display_dashboard():
             adjust_inventory()
         elif choice == 5:
             print("Program terminated")
+            return None
         else:
             print("Invalid option! Please choose a number between 1 and 5.")
         return display_dashboard()
@@ -218,8 +173,8 @@ def display_dashboard():
         print("Invalid input. Please enter an integer number between 1 and 5.")
         return display_dashboard()  # call dashboard again if input is invalid
 
-# prompts user for drink and drink adjustments, creates a drink object and stores it in a current order list
-def add_drink_to_order(drink_list):
+# Prompts user for drink and drink adjustments, creates a drink object and stores it in a current order list
+def add_drink_to_order(drink_list: list):
 
     # prints options
     print("\n--- Menu ---")
@@ -280,10 +235,8 @@ def add_drink_to_order(drink_list):
 
         # checks to see if there is enough ingredients associated with the drink to make it or not
         if cd.name in recipes and cd.size in recipes[cd.name]:
-            print("1st CHECKED")
             for key in recipes[cd.name][cd.size]:
                 if key in inventory:
-                    print ("2nd CHECKED")
                     if (inventory[key]["stock"] - recipes[cd.name][cd.size][key]) <= 0:
                         print(f"Not enough {key}. Please add to inventory. Completing and closing order now.")
                         return drink_list
@@ -306,14 +259,15 @@ def add_drink_to_order(drink_list):
         print("2. Add another drink")
         print("3. Cancel Order")
         re_choice = int(input("Choice: "))
-        # L: turning this into a while loop (until they answer something valid) can make it so that the user doesn't have to re-answer all of the previous questions
-        # added
         while True:
             if re_choice == 1:
+                print("-----------------")
                 return drink_list
             elif re_choice == 2:
+                print("-----------------")
                 return add_drink_to_order(drink_list)
             elif re_choice == 3:
+                print("-----------------")
                 return None
             else:
                 print("Drink added but invalid option, please enter an integer of 1 or 2")
@@ -322,42 +276,45 @@ def add_drink_to_order(drink_list):
         print("Invalid option, please try again")
         return add_drink_to_order(drink_list)
 
-# creates a list of drink objects after calling add_drink_to_order, then adds the list to a global list
+# Creates a list of drink objects after calling add_drink_to_order, then adds the list to a global list
 # which contains EVERY existing order
 def add_new_order():
     order = []
     order_total = 0
     new_order_drink_list = add_drink_to_order(order)
-    if not new_order_drink_list: # L: solid Python syntax! I like this
+    if not new_order_drink_list: # If the returned list is empty, no order is returned
         return None
     else:
         for drink in new_order_drink_list:
             order_total += drink.price
         new_order = Order(new_order_drink_list, order_total)
-        # debug print(f"Order Number: {new_order.total_order_count}")
         every_order.append(new_order)
         return new_order
 
-# prints each drink object in an order (prints the drink's name, topping, size, and price attributes)
+# Prints every existing order numerically
+# Prints each drink object in the order numerically (prints the drink's # in the order, name, topping, size, and price attributes)
 def view_orders():
     print("\n--- Orders Overview ---")
-    if not every_order: # if the list is completely empty blud gets returned to display dashboard
+    if not every_order: # If the list is completely empty the barista is returned to the dashboard
         print("You have no completed orders!")
+        print("-----------------")
         return display_dashboard()
     for i, order in enumerate(every_order):
         print(f"--- Order {i+1} ---")
         print(f"Order Total: ${order.drink_list_total:.2f}")
         for index, drink in enumerate(order.drink_list):
             print(f"{index+1}. {drink.name}, {drink.toppings}, {drink.size}, ${drink.price:.2f}")
+    print("-----------------------")
     return display_dashboard()
 
-# literally just prints the inventory, function probably not needed?
+# Prints the inventory, detailing current stock and unit of measurement
 def view_inventory () :
     print(f"\n-- Inventory Overview ---")
     for ingredient, details in inventory.items():
         print(f"{ingredient}: {details["stock"]} {details["unit"]}")
+    print("-----------------")
 
-# allows user to add stock to a certain ingredient
+# Allows user to add stock to a certain ingredient
 def adjust_inventory () :
     print("\n--- Inventory Adjustment ---")
     try:
@@ -376,20 +333,15 @@ def adjust_inventory () :
                             alerts.remove(sentence)
             except ValueError:
                 print("Invalid input detected, please enter an integer.")
+                print("-----------------")
                 return adjust_inventory()
+    print("-----------------")
     return None
 
 def main ():
     display_dashboard()
-    # i dont actually know if i need this but i love me some main action
 
-# creates a menu list with drink objects for each key from the menu_data dictionary
+# Creates a menu list with drink objects for each KEY from the menu_data dictionary
 menu = [Drink(drink_id = i + 1, **item_data) for i, item_data in enumerate(menu_data)]
-    # literally the same thing menu = []
-    # for i, item_data in enumerate(menu_data):
-    #     drink = Drink(drink_id = i + 1, **item_data)
-    #     menu.append(drink)
-# list stored with every existing order
-every_order = []
 
 main()
