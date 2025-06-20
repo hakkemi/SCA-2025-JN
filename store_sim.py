@@ -1,20 +1,8 @@
-alerts = [] # for inventory
-cd = None # current drink global var
+alerts = []  # for inventory
+cd = None  # current drink global var
 # List stored with every existing order
 every_order = []
 
-''' 
-** Boba Store Simulation **
-
-User is the Barista
-Drinks can be added to an order. 
-Each order has a total ($) which will be calculated based on drink  adjustments
-To the drink
-Each time a drink is added to an order, it's subsequent ingredients will be subtracted from the current stock in the inventory.
-If not enough ingredients are present in order to make the drink, the order will force complete and the current drink will be cancelled
-The barista may adjust the inventory in order to take on more drink orders.
-Alerts of ingredients falling below their threshold will be displayed on the main dashboard, and will be removed when inventory is adjusted
-'''
 # Nested dictionary containing ingredient names and relevant information
 inventory = {
     "Milk": {"stock": 1000, "unit": "ml", "threshold": 200},
@@ -41,14 +29,14 @@ recipes = {
         },
         "Large": {
             "Milk": 200,
-            "Black Tea": 25,
+            "Black Tea": 35,
             "Sugar": 40,
         },
     },
     "Thai Milk Tea": {
         "Medium": {
             "Milk": 150,
-            "Thai Tea Mix": 25,
+            "Thai Tea Mix": 290,
             "Sugar": 30,
         },
         "Large": {
@@ -100,30 +88,31 @@ recipes = {
             "Sugar": 40,
         },
         "Large": {
-                "Milk": 250,
-                "Taro Powder": 40,
-                "Sugar": 50,
+            "Milk": 250,
+            "Taro Powder": 40,
+            "Sugar": 50,
         },
     },
 }
 toppings_data = {
-    "None": 0.00,
+    "None": 0.00,  # Keep 'None' as an option, but it won't be added to the list of toppings
     "Boba": 0.50,
     "Fruit Jelly": 0.75,
     "Cheese Foam": 0.85,
     "Oreo Crumbs": 0.85,
 }
 menu_data = [
-    {"name": "Signature Milk Tea", "drink_type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": None},
-    {"name": "Thai Milk Tea", "drink_type": "Tea Based","price": 5.00, "size": "Medium", "toppings": None},
-    {"name": "Oolong Milk Tea", "drink_type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": None},
-    {"name": "Oreo Milk Tornado", "drink_type": "Milk Based","price": 7.00, "size": "Medium", "toppings": None},
-    {"name": "Strawberry Milk Tornado", "drink_type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": None},
-    {"name": "Taronado", "drink_type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": None},
+    {"name": "Signature Milk Tea", "drink_type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": []},
+    # Default to empty list
+    {"name": "Thai Milk Tea", "drink_type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": []},
+    {"name": "Oolong Milk Tea", "drink_type": "Tea Based", "price": 5.00, "size": "Medium", "toppings": []},
+    {"name": "Oreo Milk Tornado", "drink_type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": []},
+    {"name": "Strawberry Milk Tornado", "drink_type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": []},
+    {"name": "Taronado", "drink_type": "Milk Based", "price": 7.00, "size": "Medium", "toppings": []},
 ]
 
-class Drink:
 
+class Drink:
     # Creates drink object with attributes
     def __init__(self, drink_id, name, drink_type, price, size="Medium", toppings=None):
         self.drink_id = drink_id
@@ -131,17 +120,20 @@ class Drink:
         self.drink_type = drink_type
         self.price = price
         self.size = size
-        self.toppings = toppings
+        # Ensure toppings is always a list
+        self.toppings = toppings if toppings is not None else []
 
 
 # Class that stores drink objects and the total price of all drink objects
 # Each time an order 'object' is created, the class will add +1 to the instance variable 'total_order_count'
 class Order:
-    total_order_count = 0 # total order counter
+    total_order_count = 0  # total order counter
+
     def __init__(self, drink_list, drink_list_total):
         self.drink_list = drink_list
         self.drink_list_total = drink_list_total
         Order.total_order_count += 1
+
 
 # Dashboard/"main menu" function to display options to user
 def display_dashboard():
@@ -151,8 +143,9 @@ def display_dashboard():
     print("3. View Inventory")
     print("4. Adjust Inventory")
     print("5. Quit program")
-    print(f"Alerts: {alerts}")
-    try: # checks to see if input is valid
+    print(f"Alerts: {' '.join(alerts) if alerts else 'None'}")  # Improved alert display for multiple alerts
+
+    try:  # checks to see if input is valid
         choice = int(input("Choice: "))
         print("-----------------")
         if choice == 1:
@@ -173,9 +166,9 @@ def display_dashboard():
         print("Invalid input. Please enter an integer number between 1 and 5.")
         return display_dashboard()  # call dashboard again if input is invalid
 
+
 # Prompts user for drink and drink adjustments, creates a drink object and stores it in a current order list
 def add_drink_to_order(drink_list: list):
-
     # prints options
     print("\n--- Menu ---")
     print("0. Cancel Order")
@@ -185,10 +178,10 @@ def add_drink_to_order(drink_list: list):
     try:
         drink_choice = int(input("Choice: "))
     except ValueError:
-        print("Invalid input. Enter an int #")
+        print("Invalid input. Enter an integer number.")
         return add_drink_to_order(drink_list)
     if drink_choice == 0:
-        return drink_list
+        return drink_list  # Returns the current list, allowing to complete order without adding another drink
 
     if 1 <= drink_choice <= len(menu):
         drink = menu[drink_choice - 1]
@@ -201,37 +194,51 @@ def add_drink_to_order(drink_list: list):
             current_size = "Medium"
             current_price = drink.price
         else:
-            return add_drink_to_order(drink_list)
+            print("Invalid size choice. Please enter 'M' or 'L'.")
+            return add_drink_to_order(drink_list)  # Re-prompt if size is invalid
 
-        print("--- Toppings ---")
-        for i, topping in enumerate(toppings_data):
-            print(f"{i + 1}. {topping}")
+        selected_toppings = []
+        topping_names = list(toppings_data.keys())  # Get topping names to display them
 
-        try:
-            toppings_choice = int(input("Choice: "))
-        except ValueError:
-            print("Invalid option, please enter an integer")
-            return add_drink_to_order(drink_list)
-        if toppings_choice == 0:
-            print("Invalid option")
-            return add_drink_to_order(drink_list)
+        while True:
+            print("\n--- Toppings (select multiple, enter 0 to finish) ---")
+            for i, topping in enumerate(topping_names):
+                print(f"{i + 1}. {topping} (+${toppings_data[topping]:.2f})")
+            print("0. Done adding toppings")
 
-        current_topping = toppings_data["None"]
-        for i, topping in enumerate(toppings_data):
-            if toppings_choice == i + 1:
-                current_topping = topping
-                current_price += toppings_data[topping]
-                break
+            try:
+                toppings_choice = int(input("Choice: "))
+            except ValueError:
+                print("Invalid input, please enter an integer.")
+                continue
+
+            if toppings_choice == 0:
+                break  # Exit topping selection loop
+
+            if 1 <= toppings_choice <= len(topping_names):
+                chosen_topping_name = topping_names[toppings_choice - 1]
+                # Avoid adding 'None' as an actual topping if selected
+                if chosen_topping_name != "None":
+                    if chosen_topping_name not in selected_toppings:  # Prevent duplicate toppings
+                        selected_toppings.append(chosen_topping_name)
+                        current_price += toppings_data[chosen_topping_name]
+                        print(f"Added {chosen_topping_name}. Current price: ${current_price:.2f}")
+                    else:
+                        print(f"{chosen_topping_name} already added.")
+                else:
+                    print("No toppings selected.")  # User chose 'None' but still allowed to add others
+            else:
+                print("Invalid topping choice. Please enter a number from the list or 0 to finish.")
 
         # creates the drink object
         cd = Drink(
-            drink_id = drink.drink_id,
+            drink_id=drink.drink_id,
             name=drink.name,
-            drink_type = drink.drink_type,
-            price = current_price,
-            size = current_size,
-            toppings = current_topping # L: this is highlighted orange by IDE because if you don't have toppings data it's undefined
-        ) # L: moved this parenthesis down to the next line
+            drink_type=drink.drink_type,
+            price=current_price,
+            size=current_size,
+            toppings=selected_toppings  # Store the list of selected toppings
+        )
 
         # checks to see if there is enough ingredients associated with the drink to make it or not
         if cd.name in recipes and cd.size in recipes[cd.name]:
@@ -239,42 +246,59 @@ def add_drink_to_order(drink_list: list):
                 if key in inventory:
                     if (inventory[key]["stock"] - recipes[cd.name][cd.size][key]) <= 0:
                         print(f"Not enough {key}. Please add to inventory. Completing and closing order now.")
-                        return drink_list
+                        return drink_list  # Returns the current list of drinks, cancelling the last one
                     elif (inventory[key]["stock"] - recipes[cd.name][cd.size][key]) <= (inventory[key]["threshold"]):
                         print(
-                        f"*****\nWARNING: {key} stock will be {(inventory[key]["stock"] - recipes[cd.name][cd.size][key])} {inventory[key]["unit"]}.\n*****")
-                        alert_message = f"Low: {key} ({(inventory[key]["stock"] - recipes[cd.name][cd.size][key])}) {inventory[key]["unit"]}, "
+                            f"*****\nWARNING: {key} stock will be {(inventory[key]["stock"] - recipes[cd.name][cd.size][key])} {inventory[key]["unit"]}.\n*****")
+                        alert_message = f"Low: {key} ({(inventory[key]["stock"] - recipes[cd.name][cd.size][key])}) {inventory[key]["unit"]},"
+
                         for sentence in alerts:
                             if key in sentence:  # removes any alerts associated with the ingredient name so alerts doesnt have duplicate ingredients
-                                    alerts.remove(sentence)
+                                alerts.remove(sentence)
                         alerts.append(alert_message)
+
                     inventory[key]["stock"] -= recipes[cd.name][cd.size][key]
+
         else:
             print(f"Recipe for {cd.name} (Size: {cd.size}) needs to be added. "
                   f"Order will be closed, no stock will be deducted")
             return drink_list
+
         drink_list.append(cd)
         print("--- Final ---")
         print("1. Complete order")
         print("2. Add another drink")
-        print("3. Cancel Order")
-        re_choice = int(input("Choice: "))
+        print("3. Cancel Order")  # This option will discard the entire current order
+
         while True:
-            if re_choice == 1:
-                print("-----------------")
-                return drink_list
-            elif re_choice == 2:
-                print("-----------------")
-                return add_drink_to_order(drink_list)
-            elif re_choice == 3:
-                print("-----------------")
-                return None
-            else:
-                print("Drink added but invalid option, please enter an integer of 1 or 2")
+            try:
                 re_choice = int(input("Choice: "))
+                if re_choice == 1:
+                    print("-----------------")
+                    return drink_list  # Returns the list to add to a new order
+                elif re_choice == 2:
+                    print("-----------------")
+                    return add_drink_to_order(drink_list)  # Recursively call to add another drink
+                elif re_choice == 3:
+                    print("-----------------")
+                    # Revert inventory changes for the cancelled drink
+                    if cd.name in recipes and cd.size in recipes[cd.name]:
+                        for key in recipes[cd.name][cd.size]:
+                            if key in inventory:
+                                inventory[key]["stock"] += recipes[cd.name][cd.size][key]
+                                # Re-check and update alerts if stock goes above threshold after revert
+                                if inventory[key]["stock"] > inventory[key]["threshold"]:
+                                    alerts[:] = [alert for alert in alerts if key not in alert]
+                    print("Order cancelled.")
+                    return None  # Indicates the order should be discarded
+                else:
+                    print("Invalid option, please enter an integer of 1, 2, or 3.")
+            except ValueError:
+                print("Invalid input, please enter an integer.")
     else:
         print("Invalid option, please try again")
         return add_drink_to_order(drink_list)
+
 
 # Creates a list of drink objects after calling add_drink_to_order, then adds the list to a global list
 # which contains EVERY existing order
@@ -282,66 +306,95 @@ def add_new_order():
     order = []
     order_total = 0
     new_order_drink_list = add_drink_to_order(order)
-    if not new_order_drink_list: # If the returned list is empty, no order is returned
+    if new_order_drink_list is None:  # If the returned list is None, the order was cancelled
+        print("Order creation aborted.")
+        return None
+    elif not new_order_drink_list:  # If the returned list is empty, no drinks were added (e.g., cancelled at first choice)
+        print("No drinks added to order.")
         return None
     else:
         for drink in new_order_drink_list:
             order_total += drink.price
         new_order = Order(new_order_drink_list, order_total)
         every_order.append(new_order)
+        print(f"Order {Order.total_order_count} created with total: ${new_order.drink_list_total:.2f}")
         return new_order
+
 
 # Prints every existing order numerically
 # Prints each drink object in the order numerically (prints the drink's # in the order, name, topping, size, and price attributes)
 def view_orders():
     print("\n--- Orders Overview ---")
-    if not every_order: # If the list is completely empty the barista is returned to the dashboard
+    if not every_order:  # If the list is completely empty the barista is returned to the dashboard
         print("You have no completed orders!")
         print("-----------------")
         return display_dashboard()
     for i, order in enumerate(every_order):
-        print(f"--- Order {i+1} ---")
+        print(f"--- Order {i + 1} ---")
         print(f"Order Total: ${order.drink_list_total:.2f}")
         for index, drink in enumerate(order.drink_list):
-            print(f"{index+1}. {drink.name}, {drink.toppings}, {drink.size}, ${drink.price:.2f}")
+            # Display toppings list nicely, or "None" if empty
+            toppings_display = ", ".join(drink.toppings) if drink.toppings else "None"
+            print(f"{index + 1}. {drink.name}, Toppings: [{toppings_display}], {drink.size}, ${drink.price:.2f}")
     print("-----------------------")
     return display_dashboard()
 
+
 # Prints the inventory, detailing current stock and unit of measurement
-def view_inventory () :
+def view_inventory():
     print(f"\n-- Inventory Overview ---")
     for ingredient, details in inventory.items():
         print(f"{ingredient}: {details["stock"]} {details["unit"]}")
     print("-----------------")
 
-# Allows user to add stock to a certain ingredient
-def adjust_inventory () :
-    print("\n--- Inventory Adjustment ---")
-    try:
-        ingredient = input("Ingredient: ").lower().capitalize()
-    except ValueError:
-        print("Please enter a valid ingredient")
-    for key in inventory.keys():
-        if ingredient in key:
-            print(f"{ingredient} current stock: {inventory[key]["stock"]}")
-            try:
-                adjustment = int(input("Add quantity: "))
-                inventory[key]["stock"] += adjustment
-                for sentence in alerts:
-                    if ingredient in sentence: # removes any alerts associated with the ingredient name if threshold isnt met
-                        if inventory[key]["stock"] > inventory[key]["threshold"]:
-                            alerts.remove(sentence)
-            except ValueError:
-                print("Invalid input detected, please enter an integer.")
-                print("-----------------")
-                return adjust_inventory()
-    print("-----------------")
-    return None
 
-def main ():
+# Allows user to add stock to a certain ingredient
+def adjust_inventory():
+    print("\n--- Inventory Adjustment ---")
+    # Display current inventory
+    ingredients_list = list(
+        inventory.keys())  # creates list with keys of inven dict to easily access the index with number
+    for i, ingredient_name in enumerate(ingredients_list):
+        print(f"{i + 1}. {ingredient_name}: {inventory[ingredient_name]['stock']} {inventory[ingredient_name]['unit']}")
+
+    print("0. Back to Dashboard")
+
+    while True:
+        try:
+            choice = int(input("Select ingredient to adjust (number): "))
+            if choice == 0:
+                print("-----------------")
+                return
+
+            if 1 <= choice <= len(ingredients_list):
+                ingredient_name = ingredients_list[choice - 1]
+                print(
+                    f"{ingredient_name} current stock: {inventory[ingredient_name]['stock']} {inventory[ingredient_name]['unit']}")
+                adjustment = int(input("Add quantity: "))
+                if adjustment < 0:
+                    print("Cannot add negative quantity. Enter a positive number.")
+                    continue
+
+                inventory[ingredient_name]["stock"] += adjustment
+                print(
+                    f"Updated {ingredient_name} stock: {inventory[ingredient_name]['stock']} {inventory[ingredient_name]['unit']}")
+
+                # Updates and replaces each alert in the alerts list excluding any updated ingredients that are now above the threshold
+                if inventory[ingredient_name]["stock"] > inventory[ingredient_name]["threshold"]:
+                    alerts[:] = [alert for alert in alerts if ingredient_name not in alert]
+
+                print("-----------------")
+                return
+            else:
+                print("Invalid ingredient selection. Please choose a number from the list.")
+        except ValueError:
+            print("Invalid input. Please enter an integer number.")
+
+
+def main():
     display_dashboard()
 
-# Creates a menu list with drink objects for each KEY from the menu_data dictionary
-menu = [Drink(drink_id = i + 1, **item_data) for i, item_data in enumerate(menu_data)]
 
+# Creates a menu list with drink objects for each KEY from the menu_data dictionary
+menu = [Drink(drink_id=i + 1, **item_data) for i, item_data in enumerate(menu_data)]
 main()
